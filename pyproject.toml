@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "simplified-clustering"
+version = "0.1.0"
+description = ""
+authors = ["Evgeniy Trubnikov <parmesanshees@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+spacy = "^3.8.2"
+matplotlib = "^3.9.2"
+
+[tool.poetry.scripts]
+main = 'simplified_clustering.__init__:main'
+install-corpus = "simplified_clustering.install-ru_core_news_sm:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
