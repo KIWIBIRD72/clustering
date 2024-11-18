@@ -6,13 +6,23 @@ authors = ["Evgeniy Trubnikov <parmesanshees@mail.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<4.0"
 spacy = "^3.8.2"
 matplotlib = "^3.9.2"
+pandas = "^2.2.3"
+pathlib = "^1.0.1"
 
 [tool.poetry.scripts]
 main = 'simplified_clustering.__init__:main'
-install-corpus = "simplified_clustering.install-ru_core_news_sm:main"
+
+[[tool.mypy.overrides]]
+module = "sklearn.*"
+ignore_missing_imports = true
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.13.0"
+pylint = "^3.3.1"
+scipy-stubs = "^1.14.1.3"
 
 [build-system]
 requires = ["poetry-core"]
