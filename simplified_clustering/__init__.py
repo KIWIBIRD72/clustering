@@ -20,17 +20,18 @@ class Dataframe:
 
 
 class Reducer:
-    def pca_reduce(self, X: spmatrix):
+    def pca_reduce(self, X: spmatrix) -> NDArray[np.float64]:
         reducer = PCA(n_components=2)
         return reducer.fit_transform(X)
 
-    def tsne_reduce(self, X: spmatrix):
+    def tsne_reduce(self, X: spmatrix) -> NDArray[np.float64]:
         reducer = TSNE(
+            init="random",
             n_components=2,          # 2D for visualization
             perplexity=14,           # Lower value to focus on local structure
             learning_rate=100,       # Higher learning rate for cluster exaggeration
             early_exaggeration=10,   # Increase early exaggeration
-            n_iter=500,            # More iterations for better convergence
+            n_iter=500,              # More iterations for better convergence
             random_state=42,
         )
         return reducer.fit_transform(X)
@@ -47,7 +48,7 @@ class Vectorizer:
 
         if not isinstance(vectorized_doc, spmatrix):
             raise Exception(
-                '[count_vectorizer] vectorized document id not instance of spmatrix.')
+                '[count_vectorizer] vectorized document is not instance of spmatrix.')
 
         return vectorized_doc
 
@@ -55,19 +56,22 @@ class Vectorizer:
 class Clustering(ABC):
     @abstractmethod
     def _dim_reduce(self, X: spmatrix) -> NDArray[np.float64]:
-        """Сжатие матрицы документов. Можно использовать разные методы сжатия
+        """
+        Сжатие матрицы документов. Можно использовать разные методы сжатия.
+        - Можно использовать разное сжатие из класса Reducer
         """
         pass
 
     @abstractmethod
     def _vectorize(self, raw_documents: list[str]) -> spmatrix:
         """Векторизатор для множества документов
+        - Можно использовать разный алгоритм векторизации из класса Vectorizer
         """
         pass
 
     @abstractmethod
     def plot_show(self, *args, **kwargs):
-        """Отобразить кластеры на графике
+        """Отображение графического представления кластеров
         """
         pass
 
@@ -81,17 +85,17 @@ class KMeanClustering(Clustering):
         self.__CLUSTERS_AMOUNT = 3
         self.__RAND_STATE = 42
 
-        self.__X_reduced = np.array([])
+        self.__X_reduced = np.array([], dtype=np.float64)
         self.__documents = documents
-        self.__labels = np.array([])
+        self.__labels = np.array([], dtype=np.int32)
 
-    def _dim_reduce(self, X: spmatrix) -> NDArray[np.float64]:
+    def _dim_reduce(self, X: spmatrix):
         reducer = Reducer()
         return reducer.pca_reduce(X)
 
     def _vectorize(self, raw_documents: list[str]) -> spmatrix:
         vectorizer = Vectorizer()
-        return vectorizer.count_vectorizer(raw_documents)
+        return vectorizer.tfidf_vectorize(raw_documents)
 
     def plot_show(self):
         plt.figure(figsize=(12, 8))
@@ -129,9 +133,9 @@ class KMeanClustering(Clustering):
 class SimpleClustering(Clustering):
     def __init__(self, documents: list[str]):
         self.__documents = documents
-        self.__X_reduced = np.array([])
+        self.__X_reduced = np.array([], dtype=np.float64)
 
-    def _dim_reduce(self, X: spmatrix) -> NDArray[np.float64]:
+    def _dim_reduce(self, X: spmatrix):
         reducer = Reducer()
         return reducer.pca_reduce(X)
 
@@ -166,20 +170,16 @@ class SimpleClustering(Clustering):
 def main():
     dataframe = Dataframe()
     df = dataframe.get()
-
-    # define vectorizer
     documents = df['summary'].to_list()
 
     # Simple clustarization
     # simple_clustering = SimpleClustering(documents=documents)
     # clusters = simple_clustering.cluterize()
-    # print(clusters)
     # simple_clustering.plot_show()
 
     # Cluster using k-means
     kmeans_clustering = KMeanClustering(documents=documents)
     clusters = kmeans_clustering.cluterize()
-    print(clusters)
     kmeans_clustering.plot_show()
 
 
